@@ -122,8 +122,9 @@ int main() {
           }
 
           for (size_t i = 0; i < 5; ++i) {
-            X.push_back(map_waypoints_x[next_waypoint - 1 + i]);
-            Y.push_back(map_waypoints_y[next_waypoint - 1 + i]);
+            size_t ind = next_waypoint - 1 + i;
+            X.push_back(map_waypoints_x[ind] + map_waypoints_dx[ind] * 6);
+            Y.push_back(map_waypoints_y[ind] + map_waypoints_dy[ind] * 6);
           }
 
           tk::spline spline;
