@@ -15,6 +15,7 @@
 // for convenience
 using json = nlohmann::json;
 
+static const double MH2MS = 1608. / 3600.;
 
 // Checks if the SocketIO event has JSON data.
 // If there is data the JSON object in std::string format will be returned,
@@ -46,6 +47,9 @@ int main() {
   // The max s value before wrapping around the track back to 0
   double max_s = 6945.554;
 
+  double vd = 0;
+  double v = 0;
+
   std::ifstream in_map_(map_file_.c_str(), std::ifstream::in);
 
   std::string line;
@@ -68,7 +72,7 @@ int main() {
   	map_waypoints_dy.push_back(d_y);
   }
 
-  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
+  h.onMessage([&map_waypoints_x,&map_waypoints_y,&map_waypoints_s,&map_waypoints_dx,&map_waypoints_dy,&vd, &v](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length,
                      uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
     // The 4 signifies a websocket message
@@ -112,6 +116,7 @@ int main() {
 
           double d = car_d;
           double s = car_s;
+          //double v = car_speed * MH2MS;  // speed in meters per second
           size_t next_waypoint;
 
           for (size_t i = 0; i < map_waypoints_s.size(); ++i) {
@@ -121,22 +126,44 @@ int main() {
             }
           }
 
-          for (size_t i = 0; i < 5; ++i) {
-            size_t ind = next_waypoint - 1 + i;
-            X.push_back(map_waypoints_x[ind] + map_waypoints_dx[ind] * 6);
-            Y.push_back(map_waypoints_y[ind] + map_waypoints_dy[ind] * 6);
-          }
-
-          tk::spline spline;
-          spline.set_points(X, Y);    // currently it is required that X is already sorted
-
           std::vector<double> next_x_vals;
           std::vector<double> next_y_vals;
+          double x = car_x;
+          double y = car_y;
 
+          double dt = 0.02;
+
+          X.clear(); Y.clear();
+          std::vector<double> S;
+          for (size_t i = 0; i < 4; ++i) {
+            size_t ind = next_waypoint - 2 + i;
+            X.push_back(map_waypoints_x[ind] + map_waypoints_dx[ind] * 6);
+            Y.push_back(map_waypoints_y[ind] + map_waypoints_dy[ind] * 6);
+            S.push_back(map_waypoints_s[ind]);
+          }
+          tk::spline xs_spline;
+          tk::spline ys_spline;
+          xs_spline.set_points(S, X);
+          ys_spline.set_points(S, Y);
+          next_x_vals.clear();
+          next_y_vals.clear();
+          double new_s = s;
           for (size_t i = 0; i < 50; ++i) {
-            auto xy = getXY(s + i * 0.4, d, map_waypoints_s, map_waypoints_x, map_waypoints_y);
-            next_x_vals.push_back(xy[0]);
-            next_y_vals.push_back(spline(xy[0]));
+            new_s += v * dt;
+            if (vd < 5 && v < 40 * MH2MS) {
+              vd += 1;
+              v += vd / 50.;
+            }
+            else if (vd > 0){
+              vd -= 1;
+              v += vd / 50.;
+            }
+
+            std::cout << vd << "  " << v / MH2MS << std::endl;
+            double new_x = xs_spline(new_s);
+            double new_y = ys_spline(new_s);
+            next_x_vals.push_back(new_x);
+            next_y_vals.push_back(new_y);
           }
 
           //next_x_vals = {car_x + 1, car_x + 2, car_x + 3};
