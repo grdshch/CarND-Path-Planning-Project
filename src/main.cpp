@@ -114,6 +114,7 @@ int main() {
           if (prev_size > 0) car_s = end_path_s;
 
           double max_speed = 49.5;
+          bool hindrance = false;
 
           for (auto& data: sensor_fusion) {
             double d = data[6];
@@ -124,14 +125,17 @@ int main() {
               double s = data[5];
               s += prev_size * 0.02 * speed;
               if (s > car_s && s < car_s + 30) {
-                max_speed = speed;
+                //max_speed = speed;
+                hindrance = true;
+                if (lane > 0) lane--;
+                else lane++;
               }
 
             }
           }
 
-          if (ref_v > max_speed) {
-            ref_v -= 0.5;
+          if (hindrance || ref_v > max_speed) {
+            //ref_v -= 0.5;
           }
           else if (ref_v < max_speed) {
             ref_v += 0.5;
