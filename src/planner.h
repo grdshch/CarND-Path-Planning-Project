@@ -4,13 +4,15 @@
 #include <vector>
 
 #include "states.h"
+#include "helpers.h"
 
 class Planner {
 public:
-  Planner() {}
-  std::pair<double, double> GetPlan() { return std::make_pair(0., 0.);};
+  Planner();
+  ~Planner();
+  std::pair<std::vector<double>, std::vector<double>> GetPlan(InputData& data);
 private:
-  State* state;
+  State* state_;
 };
 
 #endif //PATH_PLANNING_PLANNER_H
