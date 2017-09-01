@@ -10,7 +10,6 @@
 #include "json.hpp"
 #include "helpers.h"
 #include "planner.h"
-#include "spline.h"
 
 // for convenience
 using json = nlohmann::json;
@@ -43,7 +42,8 @@ int main() {
   std::vector<double> map_waypoints_dy;
 
   // Waypoint map to read from
-  std::string map_file_ = "../data/highway_map_bosch1.csv";
+  //std::string map_file_ = "../data/highway_map_bosch1.csv";
+  std::string map_file_ = "../data/highway_map.csv";
   // The max s value before wrapping around the track back to 0
   double max_s = 6945.554;
   Planner planner;
@@ -109,7 +109,6 @@ int main() {
           auto plan = planner.GetPlan(data);
 
           json msgJson;
-          // TODO: define a path made up of (x,y) points that the car will visit sequentially every .02 seconds
           msgJson["next_x"] = plan.first;
           msgJson["next_y"] = plan.second;
 
