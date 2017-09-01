@@ -62,7 +62,7 @@ States are implemented in states.cpp and states.h files.
 Car can drive more than five miles without any problems:
 ![alt text][image1]
 
-It follows the lane and change lanes very smoothly: [video preview](./media/lane_changing.mp4 clip).
+It follows the lane and change lanes very smoothly: [video preview](./media/lane_changing.mp4).
 
 ## 4. Areas for improvement
 * Smarter accelerating. Now acceleration is done by increasing reference velocity.
